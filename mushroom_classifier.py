@@ -1,6 +1,5 @@
 import pandas as pd
-import numpy as np
-
+import pickle
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 
@@ -164,8 +163,6 @@ df.replace({'class': {
             },
            inplace=True)
 
-# df.head()
-
 # initialize training, test sets
 X_train, X_test, y_train, y_test = train_test_split(df.iloc[:, 1:],
                                                     df['class'],
@@ -178,13 +175,9 @@ model = LogisticRegression()
 # train model
 model.fit(X_train, y_train)
 
-# test model
-model.score(X_test, y_test)  # r2 score
+# # test model
+# print(f"model score: {model.score(X_test, y_test)}")  # r2 score
 
-# get user data
-
-
-# predict with model
-model.predict([[1] * 22])
-
-# return user data
+# save model
+with open('model.sav', 'wb') as f:
+    pickle.dump(model, f)
