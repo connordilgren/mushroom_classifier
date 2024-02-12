@@ -810,7 +810,7 @@ def clear_input(window_main, values):
         window_main[i].reset_group()
 
 
-def clear_input_helper(window_main, values):
+def on_clear_input(window_main, values):
     # check if all fields are entered
     if validate_input(values) == 0:
         response = warning_clear()
@@ -820,7 +820,7 @@ def clear_input_helper(window_main, values):
         clear_input(window_main, values)
 
 
-def load_random(window_main, values):
+def on_load_random(window_main, values):
     # set random values
     fields = {
         'cap-shape': {
@@ -1027,6 +1027,31 @@ def load_random(window_main, values):
     prediction = model.predict(df_input)
     give_results(prediction, df_input)
     clear_input(window_main, values)
+
+
+def on_help():
+    layout = [
+        [sg.Text("To test out this program, select 'Load Random'. This option "
+                 "will select mushroom characteristics randomly and predict "
+                 "whether a mushroom with these inputs is edible or "
+                 "poisonous. The random inputs are not likely to represent "
+                 "any real mushroom.")],
+        [sg.Text("To clear your current input for all fields, select 'Clear "
+                 "Input'. This action can not be undone.")],
+        [sg.Text("When you are finished filling out your mushroom's features, "
+                 "select 'Submit' to get the results.")],
+        [sg.Button("Exit")]
+        ]
+    window_help = sg.Window("Help Window",
+                            layout,
+                            modal=True)
+    while True:
+        event, values = window_help.read()
+        if event == "Exit" or event == sg.WIN_CLOSED:
+            break
+
+    window_help.close()
+
 
 col_1 = [
     [sg.Text("1. What is the mushroom's cap shape?")],
@@ -1245,6 +1270,7 @@ col_1 = [
 ]
 
 col_2 = [
+    [sg.Button("Help")],
     [sg.Button("Load Random")],
     [sg.Button("Clear Input")],
     [sg.Button("Submit")],
@@ -1273,10 +1299,12 @@ while True:
     # End program if user closes window_main
     if event == sg.WIN_CLOSED:
         break
+    elif event == "Help":
+        on_help()
     elif event == "Load Random":
-        load_random(window_main, values)
+        on_load_random(window_main, values)
     elif event == "Clear Input":
-        clear_input_helper(window_main, values)
+        on_clear_input(window_main, values)
     elif event == "Submit":
         on_submit(values, model)
 
