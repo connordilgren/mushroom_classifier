@@ -6,10 +6,13 @@ import PySimpleGUI as sg
 
 def invalid_input_missing_fields():
     layout = [
-        [sg.Text("Error: All fields must be completed before hitting submit.")],
+        [sg.Text("Error: All fields must be completed before hitting "
+                 "submit.")],
         [sg.Button("Exit")]
         ]
-    window_invalid_input = sg.Window("Error: Incomplete Fields", layout, modal=True)
+    window_invalid_input = sg.Window("Error: Incomplete Fields", 
+                                     layout, 
+                                     modal=True)
     while True:
         event, values = window_invalid_input.read()
         if event == "Exit" or event == sg.WIN_CLOSED:
@@ -574,9 +577,38 @@ def on_submit(values, model):
         give_results(prediction)
 
 
-def clear_input(window_main):
-    for i in range(126):
-        window_main[i].reset_group()
+def warning_clear():
+    layout = [
+        [sg.Text("Warning: All fields have an entry. Are you sure you want to "
+                 "clear your input?")],
+        [sg.Button("Yes"), sg.Button("No")]
+        ]
+    window_warning_clear = sg.Window("Warning",
+                                     layout,
+                                     modal=True)
+    while True:
+        event, values = window_warning_clear.read()
+        if event == "No" or event == sg.WIN_CLOSED:
+            output = "No"
+            break
+        elif event == "Yes":
+            output = "Yes"
+            break
+
+    window_warning_clear.close()
+    return output
+
+
+def clear_input(window_main, values):
+    # check if all fields are entered
+    if validate_input(values) == 0:
+        response = warning_clear()
+        if response == "Yes":
+            for i in range(126):
+                window_main[i].reset_group()
+    else:
+        for i in range(126):
+            window_main[i].reset_group()
 
 
 col_1 = [
@@ -796,7 +828,7 @@ col_1 = [
 ]
 
 col_2 = [
-    [sg.Button("Load Random")],
+    # [sg.Button("Load Random")],
     [sg.Button("Clear Input")],
     [sg.Button("Submit")],
 ]
@@ -825,7 +857,7 @@ while True:
     if event == sg.WIN_CLOSED:
         break
     elif event == "Clear Input":
-        clear_input(window_main)
+        clear_input(window_main, values)
     elif event == "Submit":
         on_submit(values, model)
 
