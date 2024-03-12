@@ -11,8 +11,8 @@ def invalid_input_missing_fields():
                  "submit.")],
         [sg.Button("Exit")]
         ]
-    window_invalid_input = sg.Window("Error: Incomplete Fields", 
-                                     layout, 
+    window_invalid_input = sg.Window("Error: Incomplete Fields",
+                                     layout,
                                      modal=True)
     while True:
         event, values = window_invalid_input.read()
@@ -22,7 +22,7 @@ def invalid_input_missing_fields():
     window_invalid_input.close()
 
 
-def validate_input(values):
+def get_fields():
     fields = {
         'cap-shape': {
             'bell': 0,
@@ -195,6 +195,12 @@ def validate_input(values):
             'woods': 125,
         }
     }
+
+    return fields
+
+
+def validate_input(values):
+    fields = get_fields()
 
     for field in fields:
         num_entries = 0
@@ -207,44 +213,31 @@ def validate_input(values):
     return 0
 
 
-def give_results(prediction, df_input):
-    if prediction == 0:
-        result = 'edible'
-    else:
-        result = 'poisonous'
-
+def get_give_results_layout(result, repeat_inputs):
     layout = [
         [sg.Text("Results")],
         [sg.Text(f"This mushroom is {result}.")],
         [sg.Text("Warning: This result may be incorrect. Always consult an "
                  "expert before consuming unidentified mushrooms.")],
         [sg.Text("Your inputs:")],
-
-        [sg.Text(f"cap-shape: {to_feat('cap-shape', df_input.loc[0, 'cap-shape'])}")],
-        [sg.Text(f"cap-surface: {to_feat('cap-surface', df_input.loc[0, 'cap-surface'])}")],
-        [sg.Text(f"cap-color: {to_feat('cap-color', df_input.loc[0, 'cap-color'])}")],
-        [sg.Text(f"bruises: {to_feat('bruises', df_input.loc[0, 'bruises'])}")],
-        [sg.Text(f"odor: {to_feat('odor', df_input.loc[0, 'odor'])}")],
-        [sg.Text(f"gill-attachment: {to_feat('gill-attachment', df_input.loc[0, 'gill-attachment'])}")],
-        [sg.Text(f"gill-spacing: {to_feat('gill-spacing', df_input.loc[0, 'gill-spacing'])}")],
-        [sg.Text(f"gill-size: {to_feat('gill-size', df_input.loc[0, 'gill-size'])}")],
-        [sg.Text(f"gill-color: {to_feat('gill-color', df_input.loc[0, 'gill-color'])}")],
-        [sg.Text(f"stalk-shape: {to_feat('stalk-shape', df_input.loc[0, 'stalk-shape'])}")],
-        [sg.Text(f"stalk-root: {to_feat('stalk-root', df_input.loc[0, 'stalk-root'])}")],
-        [sg.Text(f"stalk-surface-above-ring: {to_feat('stalk-surface-above-ring', df_input.loc[0, 'stalk-surface-above-ring'])}")],
-        [sg.Text(f"stalk-surface-below-ring: {to_feat('stalk-surface-below-ring', df_input.loc[0, 'stalk-surface-below-ring'])}")],
-        [sg.Text(f"stalk-color-above-ring: {to_feat('stalk-color-above-ring', df_input.loc[0, 'stalk-color-above-ring'])}")],
-        [sg.Text(f"stalk-color-below-ring: {to_feat('stalk-color-below-ring', df_input.loc[0, 'stalk-color-below-ring'])}")],
-        [sg.Text(f"veil-type: {to_feat('veil-type', df_input.loc[0, 'veil-type'])}")],
-        [sg.Text(f"veil-color: {to_feat('veil-color', df_input.loc[0, 'veil-color'])}")],
-        [sg.Text(f"ring-number: {to_feat('ring-number', df_input.loc[0, 'ring-number'])}")],
-        [sg.Text(f"ring-type: {to_feat('ring-type', df_input.loc[0, 'ring-type'])}")],
-        [sg.Text(f"spore-print-color: {to_feat('spore-print-color', df_input.loc[0, 'spore-print-color'])}")],
-        [sg.Text(f"population: {to_feat('population', df_input.loc[0, 'population'])}")],
-        [sg.Text(f"habitat: {to_feat('habitat', df_input.loc[0, 'habitat'])}")],
-
+        [sg.Text(repeat_inputs)],
         [sg.Button("Exit")]
         ]
+
+    return layout
+
+
+def give_results(prediction, df_input):
+    if prediction == 0:
+        result = 'edible'
+    else:
+        result = 'poisonous'
+
+    repeat_inputs = ""
+    for col in df_input.columns:
+        repeat_inputs += f"{col}: {to_feat(col, df_input.loc[0, col])}\n"
+
+    layout = get_give_results_layout(result, repeat_inputs)
     window_resuls = sg.Window("Results", layout, modal=True)
     while True:
         event, values = window_resuls.read()
@@ -255,358 +248,14 @@ def give_results(prediction, df_input):
 
 
 def to_feat(field, num):
-    fields = {
-        'cap-shape': {
-            'bell': 0,
-            'conical': 1,
-            'convex': 2,
-            'flat': 3,
-            'knobbed': 4,
-            'sunken': 5,
-        },
-        'cap-surface': {
-            'fibrous': 6,
-            'grooves': 7,
-            'scaly': 8,
-            'smooth': 9,
-        },
-        'cap-color': {
-            'brown': 10,
-            'buff': 11,
-            'cinnamon': 12,
-            'gray': 13,
-            'green': 14,
-            'pink': 15,
-            'purple': 16,
-            'red': 17,
-            'white': 18,
-            'yellow': 19,
-        },
-        'bruises': {
-            'Yes': 20,
-            'No': 21,
-        },
-        'odor': {
-            'almond': 22,
-            'anise': 23,
-            'creosote': 24,
-            'fishy': 25,
-            'foul': 26,
-            'musty': 27,
-            'none': 28,
-            'pungent': 29,
-            'spicy': 30,
-        },
-        'gill-attachment': {
-            'attached': 31,
-            'descending': 32,
-            'free': 33,
-            'notched': 34,
-        },
-        'gill-spacing': {
-            'close': 35,
-            'crowded': 36,
-            'distant': 37,
-        },
-        'gill-size': {
-            'broad': 38,
-            'narrow': 39,
-        },
-        'gill-color': {
-            'black': 40,
-            'brown': 41,
-            'buff': 42,
-            'chocolate': 43,
-            'gray': 44,
-            'green': 45,
-            'orange': 46,
-            'pink': 47,
-            'purple': 48,
-            'red': 49,
-            'white': 50,
-            'yellow': 51,
-        },
-        'stalk-shape': {
-            'enlarging': 52,
-            'tapering': 53,
-        },
-        'stalk-root': {
-            'bulbous': 54,
-            'club': 55,
-            'cup': 56,
-            'equal': 57,
-            'rhizomorphs': 58,
-            'rooted': 59,
-            'missing': 60,
-        },
-        'stalk-surface-above-ring': {
-            'fibrous': 61,
-            'scaly': 62,
-            'silky': 63,
-            'smooth': 64,
-        },
-        'stalk-surface-below-ring': {
-            'fibrous': 65,
-            'scaly': 66,
-            'silky': 67,
-            'smooth': 68,
-        },
-        'stalk-color-above-ring': {
-            'brown': 69,
-            'buff': 70,
-            'cinnamon': 71,
-            'gray': 72,
-            'orange': 73,
-            'pink': 74,
-            'red': 75,
-            'white': 76,
-            'yellow': 77,
-        },
-        'stalk-color-below-ring': {
-            'brown': 78,
-            'buff': 79,
-            'cinnamon': 80,
-            'gray': 81,
-            'orange': 82,
-            'pink': 83,
-            'red': 84,
-            'white': 85,
-            'yellow': 86,
-        },
-        'veil-type': {
-            'partial': 87,
-            'universal': 88,
-        },
-        'veil-color': {
-            'brown': 89,
-            'orange': 90,
-            'white': 91,
-            'yellow': 92,
-        },
-        'ring-number': {
-            'none': 93,
-            'one': 94,
-            'two': 95,
-        },
-        'ring-type': {
-            'cobwebby': 96,
-            'evanescent': 97,
-            'flaring': 98,
-            'large': 99,
-            'none': 100,
-            'pendant': 101,
-            'sheathing': 102,
-            'zone': 103,
-        },
-        'spore-print-color': {
-            'black': 104,
-            'brown': 105,
-            'buff': 106,
-            'chocolate': 107,
-            'green': 108,
-            'orange': 109,
-            'purple': 110,
-            'white': 111,
-            'yellow': 112,
-        },
-        'population': {
-            'abundant': 113,
-            'clustered': 114,
-            'numerous': 115,
-            'scattered': 116,
-            'several': 117,
-            'solitary': 118,
-        },
-        'habitat': {
-            'grasses': 119,
-            'leaves': 120,
-            'meadows': 121,
-            'paths': 122,
-            'urban': 123,
-            'waste': 124,
-            'woods': 125,
-        }
-    }
+    fields = get_fields()
 
     for k, v in fields[field].items():
         if v == num:
             return k
 
 
-def format_input(values):
-    fields = {
-        'cap-shape': {
-            'bell': 0,
-            'conical': 1,
-            'convex': 2,
-            'flat': 3,
-            'knobbed': 4,
-            'sunken': 5,
-        },
-        'cap-surface': {
-            'fibrous': 6,
-            'grooves': 7,
-            'scaly': 8,
-            'smooth': 9,
-        },
-        'cap-color': {
-            'brown': 10,
-            'buff': 11,
-            'cinnamon': 12,
-            'gray': 13,
-            'green': 14,
-            'pink': 15,
-            'purple': 16,
-            'red': 17,
-            'white': 18,
-            'yellow': 19,
-        },
-        'bruises': {
-            'Yes': 20,
-            'No': 21,
-        },
-        'odor': {
-            'almond': 22,
-            'anise': 23,
-            'creosote': 24,
-            'fishy': 25,
-            'foul': 26,
-            'musty': 27,
-            'none': 28,
-            'pungent': 29,
-            'spicy': 30,
-        },
-        'gill-attachment': {
-            'attached': 31,
-            'descending': 32,
-            'free': 33,
-            'notched': 34,
-        },
-        'gill-spacing': {
-            'close': 35,
-            'crowded': 36,
-            'distant': 37,
-        },
-        'gill-size': {
-            'broad': 38,
-            'narrow': 39,
-        },
-        'gill-color': {
-            'black': 40,
-            'brown': 41,
-            'buff': 42,
-            'chocolate': 43,
-            'gray': 44,
-            'green': 45,
-            'orange': 46,
-            'pink': 47,
-            'purple': 48,
-            'red': 49,
-            'white': 50,
-            'yellow': 51,
-        },
-        'stalk-shape': {
-            'enlarging': 52,
-            'tapering': 53,
-        },
-        'stalk-root': {
-            'bulbous': 54,
-            'club': 55,
-            'cup': 56,
-            'equal': 57,
-            'rhizomorphs': 58,
-            'rooted': 59,
-            'missing': 60,
-        },
-        'stalk-surface-above-ring': {
-            'fibrous': 61,
-            'scaly': 62,
-            'silky': 63,
-            'smooth': 64,
-        },
-        'stalk-surface-below-ring': {
-            'fibrous': 65,
-            'scaly': 66,
-            'silky': 67,
-            'smooth': 68,
-        },
-        'stalk-color-above-ring': {
-            'brown': 69,
-            'buff': 70,
-            'cinnamon': 71,
-            'gray': 72,
-            'orange': 73,
-            'pink': 74,
-            'red': 75,
-            'white': 76,
-            'yellow': 77,
-        },
-        'stalk-color-below-ring': {
-            'brown': 78,
-            'buff': 79,
-            'cinnamon': 80,
-            'gray': 81,
-            'orange': 82,
-            'pink': 83,
-            'red': 84,
-            'white': 85,
-            'yellow': 86,
-        },
-        'veil-type': {
-            'partial': 87,
-            'universal': 88,
-        },
-        'veil-color': {
-            'brown': 89,
-            'orange': 90,
-            'white': 91,
-            'yellow': 92,
-        },
-        'ring-number': {
-            'none': 93,
-            'one': 94,
-            'two': 95,
-        },
-        'ring-type': {
-            'cobwebby': 96,
-            'evanescent': 97,
-            'flaring': 98,
-            'large': 99,
-            'none': 100,
-            'pendant': 101,
-            'sheathing': 102,
-            'zone': 103,
-        },
-        'spore-print-color': {
-            'black': 104,
-            'brown': 105,
-            'buff': 106,
-            'chocolate': 107,
-            'green': 108,
-            'orange': 109,
-            'purple': 110,
-            'white': 111,
-            'yellow': 112,
-        },
-        'population': {
-            'abundant': 113,
-            'clustered': 114,
-            'numerous': 115,
-            'scattered': 116,
-            'several': 117,
-            'solitary': 118,
-        },
-        'habitat': {
-            'grasses': 119,
-            'leaves': 120,
-            'meadows': 121,
-            'paths': 122,
-            'urban': 123,
-            'waste': 124,
-            'woods': 125,
-        }
-    }
-
+def get_field_abs_to_rel():
     field_abs_to_rel = {
         0: 0,
         1: 1,
@@ -736,30 +385,41 @@ def format_input(values):
         125: 6,
     }
 
-    df_input = pd.DataFrame({
-                                'cap-shape': [None],
-                                'cap-surface': [None],
-                                'cap-color': [None],
-                                'bruises': [None],
-                                'odor': [None],
-                                'gill-attachment': [None],
-                                'gill-spacing': [None],
-                                'gill-size': [None],
-                                'gill-color': [None],
-                                'stalk-shape': [None],
-                                'stalk-root': [None],
-                                'stalk-surface-above-ring': [None],
-                                'stalk-surface-below-ring': [None],
-                                'stalk-color-above-ring': [None],
-                                'stalk-color-below-ring': [None],
-                                'veil-type': [None],
-                                'veil-color': [None],
-                                'ring-number': [None],
-                                'ring-type': [None],
-                                'spore-print-color': [None],
-                                'population': [None],
-                                'habitat': [None]
-                                })
+    return field_abs_to_rel
+
+
+def get_empty_df():
+    df_input = pd.DataFrame({'cap-shape': [None],
+                             'cap-surface': [None],
+                             'cap-color': [None],
+                             'bruises': [None],
+                             'odor': [None],
+                             'gill-attachment': [None],
+                             'gill-spacing': [None],
+                             'gill-size': [None],
+                             'gill-color': [None],
+                             'stalk-shape': [None],
+                             'stalk-root': [None],
+                             'stalk-surface-above-ring': [None],
+                             'stalk-surface-below-ring': [None],
+                             'stalk-color-above-ring': [None],
+                             'stalk-color-below-ring': [None],
+                             'veil-type': [None],
+                             'veil-color': [None],
+                             'ring-number': [None],
+                             'ring-type': [None],
+                             'spore-print-color': [None],
+                             'population': [None],
+                             'habitat': [None]
+                             })
+
+    return df_input
+
+
+def format_input(values):
+    fields = get_fields()
+    field_abs_to_rel = get_field_abs_to_rel()
+    df_input = get_empty_df()
 
     for field in fields:
         for option in fields[field]:
@@ -770,7 +430,7 @@ def format_input(values):
     return df_input
 
 
-def on_submit(values, model):
+def on_submit(values, model, window_main):
     # validate input
     validate_success = validate_input(values)
 
@@ -783,15 +443,19 @@ def on_submit(values, model):
         clear_input(window_main, values)
 
 
-def warning_clear():
+def get_warning_clear_layout():
     layout = [
         [sg.Text("Warning: All fields have an entry. Are you sure you want to "
                  "clear your input?")],
         [sg.Button("Yes"), sg.Button("No")]
         ]
-    window_warning_clear = sg.Window("Warning",
-                                     layout,
-                                     modal=True)
+
+    return layout
+
+
+def warning_clear():
+    layout = get_warning_clear_layout()
+    window_warning_clear = sg.Window("Warning", layout, modal=True)
     while True:
         event, values = window_warning_clear.read()
         if event == "No" or event == sg.WIN_CLOSED:
@@ -839,7 +503,7 @@ def on_load_random(window_main, values, client_socket, model):
     clear_input(window_main, values)
 
 
-def on_help():
+def get_on_help_layout():
     layout = [
         [sg.Text("To test out this program, select 'Load Random'. This option "
                  "will select mushroom characteristics randomly and predict "
@@ -852,9 +516,13 @@ def on_help():
                  "select 'Submit' to get the results.")],
         [sg.Button("Exit")]
         ]
-    window_help = sg.Window("Help Window",
-                            layout,
-                            modal=True)
+
+    return layout
+
+
+def on_help():
+    layout = get_on_help_layout()
+    window_help = sg.Window("Help Window", layout, modal=True)
     while True:
         event, values = window_help.read()
         if event == "Exit" or event == sg.WIN_CLOSED:
@@ -863,23 +531,16 @@ def on_help():
     window_help.close()
 
 
-def main():
-
-    # connect to microservice
-    port = 1100
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect(("127.0.0.1", port))
-
-    # columns and layout of main page
+def get_column_1():
     col_1 = [
         [sg.Text("1. What is the mushroom's cap shape?")],
         [
-            sg.Radio('bell', 'cap-shape'),      # 0
-            sg.Radio('conical', 'cap-shape'),   # 1
-            sg.Radio('convex', 'cap-shape'),    # 2
-            sg.Radio('flat', 'cap-shape'),      # 3
-            sg.Radio('knobbed', 'cap-shape'),   # 4
-            sg.Radio('sunken', 'cap-shape'),    # 5
+            sg.Radio('bell', 'cap-shape'),
+            sg.Radio('conical', 'cap-shape'),
+            sg.Radio('convex', 'cap-shape'),
+            sg.Radio('flat', 'cap-shape'),
+            sg.Radio('knobbed', 'cap-shape'),
+            sg.Radio('sunken', 'cap-shape'),
         ],
 
         [sg.Text("2. What is the mushroom's cap surface?")],
@@ -1087,37 +748,61 @@ def main():
         ],
     ]
 
+    return col_1
+
+
+def get_column_2():
     col_2 = [
-        [sg.Button("Help")],
-        [sg.Button("Load Random")],
-        [sg.Button("Clear Input")],
-        [sg.Button("Submit")],
-    ]
+            [sg.Button("Help")],
+            [sg.Button("Load Random")],
+            [sg.Button("Clear Input")],
+            [sg.Button("Submit")],
+        ]
+
+    return col_2
+
+
+def get_layout():
+    col_1 = get_column_1()
+    col_2 = get_column_2()
 
     layout = [
         [sg.Text("Welcome to the Mushroom Classifier!")],
-        [sg.Text("Please answer the following questions about your mushroom, and "
-                "this program will classify it as either edible or poisonous.")],
+        [sg.Text("Please answer the following questions about your mushroom, "
+                 "and this program will classify it as either edible or "
+                 "poisonous.")],
         [
             sg.Column(col_1, scrollable=True),
             sg.Column(col_2)
         ],
     ]
 
-    # Create the window
-    window_main = sg.Window("Mushroom Classifier", layout, size=(1200, 600))
+    return layout
 
-    # load in model
+
+def connect_to_microservice():
+    port = 1100
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.connect(("127.0.0.1", port))
+    return client_socket
+
+
+def get_model():
     with open('model.sav', 'rb') as f:
         model = pickle.load(f)
+    return model
 
-    # main event loop
+
+def on_close(client_socket):
+    client_socket.sendall("close".encode())
+    client_socket.close()
+
+
+def main_event_loop(window_main, client_socket, model):
     while True:
         event, values = window_main.read()
-        # End program if user closes window_main
         if event == sg.WIN_CLOSED:
-            client_socket.sendall("close".encode())
-            client_socket.close()
+            on_close(client_socket)
             break
         elif event == "Help":
             on_help()
@@ -1126,8 +811,15 @@ def main():
         elif event == "Clear Input":
             on_clear_input(window_main, values)
         elif event == "Submit":
-            on_submit(values, model)
+            on_submit(values, model, window_main)
 
+
+def main():
+    client_socket = connect_to_microservice()
+    layout = get_layout()
+    window_main = sg.Window("Mushroom Classifier", layout, size=(1200, 600))
+    model = get_model()
+    main_event_loop(window_main, client_socket, model)
     window_main.close()
 
 
